@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الأعضاء - نظام إدارة المكتبة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+        }
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box .form-control {
+            padding-right: 40px;
+        }
+        .search-box .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6e707e;
+        }
+    </style>
+</head>
+<body>
+<!-- شريط التنقل -->
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-book-reader me-2"></i>
+            نظام إدارة المكتبة
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">الرئيسية</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/books}">الكتب</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#">الأعضاء</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/borrowings}">الاستعارات</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- المحتوى الرئيسي -->
+<div class="container">
+    <!-- رسائل التنبيه -->
+    <div th:if="${message}" class="alert" th:classappend="${alertClass}" role="alert">
+        <span th:text="${message}"></span>
+    </div>
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">إدارة الأعضاء</h1>
+        <a th:href="@{/members/new}" class="btn btn-primary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+            <span class="text">إضافة عضو جديد</span>
+        </a>
+    </div>
+
+    <!-- بطاقة البحث -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">بحث عن الأعضاء</h6>
+        </div>
+        <div class="card-body">
+            <form th:action="@{/members}" method="get" class="row g-3">
+                <div class="col-md-8">
+                    <div class="search-box">
+                        <input type="text" class="form-control" name="name" th:value="${name}" placeholder="بحث بالاسم...">
+                        <div class="search-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i> بحث
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- بطاقة قائمة الأعضاء -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">قائمة الأعضاء</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>البريد الإلكتروني</th>
+                        <th>الهاتف</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="member : ${members}">
+                        <td th:text="${member.name}"></td>
+                        <td th:text="${member.email}"></td>
+                        <td th:text="${member.phone}"></td>
+                        <td>
+                            <a th:href="@{'/members/' + ${member.id}}" class="btn btn-sm btn-info me-1 text-white">
+                                <i class="fas fa-eye"></i> عرض
+                            </a>
+                            <a th:href="@{'/members/' + ${member.id} + '/edit'}" class="btn btn-sm btn-primary me-1">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <form th:action="@{'/members/' + ${member.id} + '/delete'}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذا العضو؟')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${members.empty}">
+                        <td colspan="4" class="text-center">لا توجد أعضاء مسجلين</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- التذييل -->
+<footer class="py-4 bg-light mt-auto">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between small">
+            <div class="text-muted">حقوق النشر &copy; نظام إدارة المكتبة 2023</div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استعارة كتاب - نظام إدارة المكتبة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #1cc88a;
+        }
+        body {
+            background-color: #f8f9fc;
+            font-family: 'Tajawal', sans-serif;
+        }
+        .navbar {
+            background-color: var(--primary-color);
+        }
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 10px 10px 0 0 !important;
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .book-card {
+            border-left: 4px solid var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+<!-- شريط التنقل -->
+<nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-book-reader me-2"></i>
+            نظام إدارة المكتبة
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">الرئيسية</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/books}">الكتب</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/members}">الأعضاء</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/borrowings}">الاستعارات</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- المحتوى الرئيسي -->
+<div class="container">
+    <!-- رسائل التنبيه -->
+    <div th:if="${message}" class="alert" th:classappend="${alertClass}" role="alert">
+        <span th:text="${message}"></span>
+    </div>
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">استعارة كتاب</h1>
+        <a th:href="@{/borrowings}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> رجوع
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">تفاصيل الاستعارة</h6>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/borrowings/borrow}" method="post">
+                        <div class="mb-3">
+                            <label for="memberId" class="form-label">اختر العضو *</label>
+                            <select class="form-select" id="memberId" name="memberId" required>
+                                <option value="">-- اختر العضو --</option>
+                                <option th:each="member : ${members}"
+                                        th:value="${member.id}"
+                                        th:text="${member.name}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bookId" class="form-label">اختر الكتاب *</label>
+                            <select class="form-select" id="bookId" name="bookId" required>
+                                <option value="">-- اختر الكتاب --</option>
+                                <option th:each="book : ${availableBooks}"
+                                        th:value="${book.id}"
+                                        th:text="${book.title + ' - ' + book.author}"></option>
+                            </select>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            مدة الاستعارة 14 يوم. سيتم احتساب التأخير بعد هذه المدة.
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a th:href="@{/borrowings}" class="btn btn-secondary">إلغاء</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt me-1"></i> تأكيد الاستعارة
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card book-card mb-4">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold">الكتب المتاحة</h6>
+                </div>
+                <div class="card-body">
+                    <div th:if="${availableBooks.empty}" class="text-center text-muted">
+                        لا توجد كتب متاحة حالياً
+                    </div>
+                    <div th:each="book : ${availableBooks}" class="mb-2 p-2 border rounded">
+                        <div class="fw-bold" th:text="${book.title}"></div>
+                        <div class="text-muted small" th:text="${book.author}"></div>
+                        <div class="text-muted small" th:text="${book.isbn} ?: 'بدون ISBN'"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- التذييل -->
+<footer class="py-4 bg-light mt-auto">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between small">
+            <div class="text-muted">حقوق النشر &copy; نظام إدارة المكتبة 2023</div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
