@@ -99,6 +99,22 @@ public class DataInitializer implements CommandLineRunner {
                     .memberId(savedMember.getId())
                     .build();
             userRepository.save(member);
+        } else {
+            User existingMemberUser = userRepository.findByUsername("member").orElse(null);
+            if (existingMemberUser != null && existingMemberUser.getMemberId() == null) {
+                Member memberEntity = memberRepository.findByEmail("member@lms.com").orElse(null);
+                if (memberEntity == null) {
+                    memberEntity = Member.builder()
+                            .name("اسم العضو التجريبي")
+                            .email("member@lms.com")
+                            .phone("123456789")
+                            .address("شارع المكتبة، الرياض")
+                            .build();
+                    memberEntity = memberRepository.save(memberEntity);
+                }
+                existingMemberUser.setMemberId(memberEntity.getId());
+                userRepository.save(existingMemberUser);
+            }
         }
     }
 }
