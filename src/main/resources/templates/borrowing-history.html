@@ -127,7 +127,7 @@
                         <td th:text="${history.title}"></td>
                         <td th:text="${#temporals.format(history.borrowDate, 'yyyy-MM-dd')}"></td>
                         <td th:text="${#temporals.format(history.returnDate, 'yyyy-MM-dd')}"></td>
-                        <td th:text="${#temporals.daysBetween(history.borrowDate, history.returnDate)} + ' أيام'"></td>
+                        <td th:text="${T(com.baha.oop.util.DateUtils).getDaysBetween(history.borrowDate, history.returnDate)} + ' أيام'"></td>
                     </tr>
                     <tr th:if="${borrowingHistory.empty}">
                         <td colspan="5" class="text-center">لا توجد سجلات تاريخية للاستعارات</td>

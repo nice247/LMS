@@ -16,7 +16,8 @@ import java.time.LocalDate;
 @Builder
 public class BorrowingHistory {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "borrowing_history_seq")
+    @SequenceGenerator(name = "borrowing_history_seq", sequenceName = "borrowing_history_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "book_title")

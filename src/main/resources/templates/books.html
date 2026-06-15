@@ -200,7 +200,7 @@
                                     <i class="fas fa-trash"></i> حذف
                                 </button>
                             </form>
-                            <a th:if="${book.forSale and book.available}" th:href="@{'/purchases/buy/' + ${book.id}}" class="btn btn-sm btn-success">
+                            <a th:if="${book.forSale}" th:href="@{'/purchases/buy/' + ${book.id}}" class="btn btn-sm btn-success">
                                 <i class="fas fa-shopping-cart"></i>
                                 <span sec:authorize="hasRole('LIBRARIAN')">شراء</span>
                                 <span sec:authorize="hasRole('MEMBER')">طلب شراء</span>
