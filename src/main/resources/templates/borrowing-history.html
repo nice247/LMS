@@ -86,10 +86,10 @@
                         <td th:text="${borrowing.book.title}"></td>
                         <td th:text="${#temporals.format(borrowing.borrowDate, 'yyyy-MM-dd')}"></td>
                         <td>
-                            <span th:if="${borrowing.deliveryStatus.name() == 'NONE'}" class="badge bg-secondary">استلام من المكتبة</span>
-                            <span th:if="${borrowing.deliveryStatus.name() == 'PENDING'}" class="badge bg-warning text-dark">قيد المعالجة</span>
-                            <span th:if="${borrowing.deliveryStatus.name() == 'IN_TRANSIT'}" class="badge bg-info">في الطريق</span>
-                            <span th:if="${borrowing.deliveryStatus.name() == 'DELIVERED'}" class="badge bg-success">تم التوصيل</span>
+                            <span th:if="${borrowing.deliveryStatus == null or borrowing.deliveryStatus == T(com.baha.oop.model.DeliveryStatus).NONE}" class="badge bg-secondary">استلام من المكتبة</span>
+                            <span th:if="${borrowing.deliveryStatus != null and borrowing.deliveryStatus == T(com.baha.oop.model.DeliveryStatus).PENDING}" class="badge bg-warning text-dark">قيد المعالجة</span>
+                            <span th:if="${borrowing.deliveryStatus != null and borrowing.deliveryStatus == T(com.baha.oop.model.DeliveryStatus).SHIPPED}" class="badge bg-info">في الطريق</span>
+                            <span th:if="${borrowing.deliveryStatus != null and borrowing.deliveryStatus == T(com.baha.oop.model.DeliveryStatus).DELIVERED}" class="badge bg-success">تم التوصيل</span>
                         </td>
                         <td th:text="${borrowing.deliveryAddress != null ? borrowing.deliveryAddress : '---'}"></td>
                     </tr>

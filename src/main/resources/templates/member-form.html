@@ -112,6 +112,11 @@
                             <div class="form-text">أدخل رقم الهاتف للعضو</div>
                         </div>
 
+                        <div class="alert alert-info py-2" th:if="${member.id == null}">
+                            <i class="fas fa-info-circle me-1"></i>
+                            ملاحظة: سيتم تلقائياً إنشاء حساب مستخدم للدخول باسم العضو (البريد الإلكتروني، أو <code>member_[id]</code> في حال عدم توفره) وكلمة مرور افتراضية هي <strong>123456</strong>.
+                        </div>
+
                         <div class="d-flex justify-content-between">
                             <a th:href="@{/members}" class="btn btn-secondary">
                                 <i class="fas fa-arrow-left me-1"></i> رجوع

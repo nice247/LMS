@@ -6,7 +6,9 @@ import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.Member;
 import com.baha.oop.repository.BorrowingRepository;
 import com.baha.oop.repository.MemberRepository;
+import com.baha.oop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,8 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     private final BorrowingRepository borrowingRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
@@ -45,7 +49,28 @@ public class MemberService {
             }
         }
 
-        return memberRepository.save(member);
+        boolean isNew = (member.getId() == null);
+        Member savedMember = memberRepository.save(member);
+
+        if (isNew) {
+            String username = savedMember.getEmail();
+            if (username == null || username.trim().isEmpty()) {
+                username = "member_" + savedMember.getId();
+            }
+
+            if (!userRepository.existsByUsername(username)) {
+                com.baha.oop.model.User user = com.baha.oop.model.User.builder()
+                        .username(username)
+                        .password(passwordEncoder.encode("123456"))
+                        .email(savedMember.getEmail())
+                        .role(com.baha.oop.model.Role.MEMBER)
+                        .memberId(savedMember.getId())
+                        .build();
+                userRepository.save(user);
+            }
+        }
+
+        return savedMember;
     }
 
     @Transactional
