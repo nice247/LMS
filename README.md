@@ -1,153 +1,119 @@
-# LMS 
-# 📚 نظام إدارة المكتبة | Library Management System
+# 📚 نظام إدارة المكتبة الذكي | Library Management System (LMS)
 
-نظام لإدارة مكتبة يحتوي على إدارة الكتب، الأعضاء، والاستعارات، مع سجل تاريخي مبسط وواجهة عربية سهلة الاستخدام.
+نظام متكامل وحديث لإدارة المكتبات مبني باستخدام **Spring Boot** و **PostgreSQL**، يتميز بواجهة مستخدم عربية أنيقة وسهلة الاستخدام تدعم أدوار المستخدمين المختلفة (أمين المكتبة وعضو المكتبة) مع حماية كاملة للمسارات والخدمات.
 
 ---
 
-## ✨ المميزات
-- **إدارة الكتب**: إضافة، تعديل، حذف، وعرض الكتب.  
-- **إدارة الأعضاء**: تسجيل وإدارة بيانات الأعضاء.  
-- **نظام الاستعارات**: استعارة الكتب وتسجيل الإرجاع.  
-- **السجل التاريخي**: حفظ جميع الاستعارات السابقة.  
-- **واجهة عربية**: دعم كامل للغة العربية.  
+## ✨ المميزات الرئيسية للنظام
+
+### 1. 👥 إدارة الصلاحيات والأدوار (RBAC)
+*   **أمين المكتبة (Librarian):** له الصلاحية الكاملة لإدارة الكتب (إضافة، تعديل، حذف)، إدارة الأعضاء، إدارة عمليات الاستعارة والإرجاع، وإدارة وتأكيد طلبات شراء الكتب.
+*   **عضو المكتبة (Member):** يمكنه تصفح الكتب المتاحة، استعارة وإرجاع الكتب، طلب توصيل الكتب المستعارة إلى منزله، وتقديم طلبات شراء للكتب المعروضة للبيع (تظهر كطلب معلق بانتظار موافقة أمين المكتبة).
+
+### 2. 🔐 الحماية والأمان (Spring Security & JWT)
+*   تأمين كامل لمسارات وتطبيقات النظام باستخدام **JWT (JSON Web Tokens)** بشكل عديم الحالة (Stateless).
+*   حماية الـ REST APIs والصفحات وتمرير التوكن عبر ملفات تعريف الارتباط (Cookies) أو ترويسة الطلب لضمان تجربة تصفح آمنة وسلسة.
+
+### 3. 📖 إدارة الكتب والاستعارة
+*   البحث الذكي عن الكتب وتصفية النتائج.
+*   نظام استعارة مرن يدعم **التوصيل للمنازل (Delivery)** مع تتبع حالة الطلب (PENDING, SHIPPED, DELIVERED).
+*   حساب تواريخ الاسترجاع وتتبع الاستعارات المتأخرة والمكتملة.
+
+### 4. 🛒 نظام شراء الكتب والطلبات
+*   إمكانية تحديد كتب معينة للبيع وتحديد أسعارها.
+*   نظام تقديم طلبات شراء من قبل الأعضاء، ومتابعتها من قبل أمين المكتبة للموافقة عليها أو رفضها.
 
 ---
 
 ## 🛠️ التقنيات المستخدمة
 
-### Backend
-- **Java 17+**
-- **Spring Boot 3.x**
-- **Spring Data JPA**
-- **Hibernate**
-- **Oracle Database** (يمكن استبدالها بقاعدة أخرى)
-
-### Frontend
-- **Thymeleaf**
-- **Bootstrap 5**
-- **Font Awesome**
-- **HTML5 / CSS3**
-
-### الأدوات
-- **Maven**
-- **Lombok**
-- **Spring Boot DevTools**
+*   **الخلفية (Backend):** Java 17, Spring Boot 3.x, Spring Security, Spring Data JPA, JWT (JJWT).
+*   **قاعدة البيانات (Database):** PostgreSQL.
+*   **الواجهة الأمامية (Frontend):** Thymeleaf, HTML5, CSS3, Bootstrap 5, Font Awesome.
+*   **أدوات التطوير:** Maven, Lombok.
 
 ---
 
-## 📂 هيكل المشروع
+## 📂 هيكل المشروع الأساسي
+
+```text
 src/
-├── main/
-│ ├── java/com/baha/oop/
-│ │ ├── controller/ # المتحكمات
-│ │ ├── model/ # النماذج (Entities)
-│ │ ├── repository/ # المستودعات
-│ │ ├── service/ # الخدمات
-│ │ └── util/ # الأدوات المساعدة
-│ ├── resources/
-│ │ ├── static/ # الملفات الثابتة
-│ │ ├── templates/ # قوالب Thymeleaf
-│ │ └── application.properties
-└── test/ # اختبارات مبدئية (غير مكتملة)
-
-markdown
-Copy code
-
----
-
-## 🗃️ النماذج (Entities)
-
-### 📖 Book
-- `id` - المعرف  
-- `title` - العنوان  
-- `author` - المؤلف  
-- `isbn` - الرقم الدولي  
-- `publicationYear` - سنة النشر  
-- `available` - حالة التوفر  
-
-### 👥 Member
-- `id` - المعرف  
-- `name` - الاسم  
-- `email` - البريد الإلكتروني  
-- `phone` - الهاتف  
-- `address` - العنوان  
-
-### 🔄 Borrowing
-- `id` - مفتاح مركب (bookId + memberId)  
-- `book` - الكتاب  
-- `member` - العضو  
-- `borrowDate` - تاريخ الاستعارة  
-- `returnDate` - تاريخ الإرجاع  
-
-### 📋 BorrowingHistory
-- `id` - المعرف  
-- `title` - عنوان الكتاب  
-- `member` - اسم العضو  
-- `borrowDate` - تاريخ الاستعارة  
-- `returnDate` - تاريخ الإرجاع  
+└── main/
+    ├── java/com/baha/oop/
+    │   ├── config/        # إعدادات التهيئة والبيانات الأولية
+    │   ├── controller/    # متحكمات الصفحات (MVC) والـ REST APIs
+    │   ├── dto/           # كائنات نقل البيانات (DTOs)
+    │   ├── exception/     # معالجة الأخطاء الاستثنائية
+    │   ├── model/         # النماذج الكينونية (Entities)
+    │   ├── repository/    # مستودعات البيانات (JPA Repositories)
+    │   ├── security/      # البنية التحتية للأمان و JWT
+    │   └── service/       # منطق الأعمال والخدمات (Business Logic)
+    └── resources/
+        ├── static/        # الملفات الثابتة (CSS, JS)
+        ├── templates/     # قوالب Thymeleaf الخاصة بالواجهات
+        └── application.properties # إعدادات تكوين التطبيق
+```
 
 ---
 
-## 🚀 كيفية التشغيل
+## 🚀 كيفية التثبيت والتشغيل
 
-### المتطلبات
-- Java 17 أو أعلى  
-- Maven 3.6+  
-- Oracle Database (أو قاعدة أخرى)  
+### المتطلبات الأساسية
+1.  تثبيت **Java 17** أو إصدار أحدث.
+2.  تثبيت أداة **Maven**.
+3.  تثبيت وتشغيل قاعدة بيانات **PostgreSQL**.
 
-### خطوات التشغيل
-```bash
-# استنساخ المشروع
-git clone <رابط-المشروع>
-cd library-management-system
+### خطوات التهيئة والتشغيل
 
-# تكوين قاعدة البيانات
-# - أنشئ قاعدة جديدة
-# - عدّل إعدادات الاتصال في application.properties
+1.  **استنساخ المستودع (Clone):**
+    ```bash
+    git clone https://github.com/nice247/LMS.git
+    cd LMS
+    ```
 
-# تثبيت التبعيات
-mvn clean install
+2.  **إعداد قاعدة البيانات:**
+    قم بإنشاء قاعدة بيانات جديدة في PostgreSQL باسم `lms`:
+    ```sql
+    CREATE DATABASE lms;
+    ```
 
-# تشغيل التطبيق
-mvn spring-boot:run
-بعد التشغيل، افتح المتصفح على:
+3.  **تكوين الاتصال (اختياري):**
+    افتح ملف `src/main/resources/application.properties` وقم بتعديل بيانات الاتصال إذا كانت تختلف عن البيانات الافتراضية:
+    ```properties
+    spring.datasource.url=jdbc:postgresql://localhost:5432/lms
+    spring.datasource.username=nice
+    spring.datasource.password=1234
+    ```
 
-arduino
-Copy code
-http://localhost:8080
-⚙️ إعدادات التكوين
-application.properties
+4.  **بناء وتشغيل التطبيق:**
+    استخدم منفذ الأوامر المرفق لبناء وتشغيل المشروع:
+    ```bash
+    ./mvnw clean spring-boot:run
+    ```
 
-properties
-Copy code
-spring.datasource.url=jdbc:oracle:thin:@localhost:1521:xe
-spring.datasource.username=username
-spring.datasource.password=password
-
-spring.jpa.hibernate.ddl-auto=update
-spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.OracleDialect
-
-server.port=8080
-👥 المطور
-بها الدين - GitHub
-
-📄 الرخصة
-هذا المشروع مرخص تحت رخصة MIT.
-انظر ملف LICENSE للمزيد.
-
-ملاحظة: هذا المشروع لأغراض تعليمية وتجريبية، وقد يحتاج إلى تطوير إضافي (اختبارات، تقارير، نشر) قبل استخدامه في بيئة إنتاج.
-
-yaml
-Copy code
+5.  **تصفح التطبيق:**
+    افتح المتصفح واذهب إلى العنوان التالي:
+    ```arduino
+    http://localhost:8080
+    ```
 
 ---
 
-تحبني أخلي التوثيق **مختصر جدًا (صفحة واحدة)** زي المشاريع الصغيرة في GitHub، ولا نتركه **مفصل زي هذا** لكن بدون الميزات غير المنفذة؟
+## 👥 حسابات الدخول الافتراضية للتجربة
 
+عند تشغيل التطبيق لأول مرة، تقوم فئة `DataInitializer` تلقائياً بتهيئة الحسابات والبيانات التالية في قاعدة البيانات لتسهيل عملية الاختبار وتجربة النظام:
 
+### 1. حساب أمين المكتبة (Librarian)
+*   **اسم المستخدم:** `admin`
+*   **كلمة المرور:** `admin123`
+*   **الدور:** LIBRARIAN
 
+### 2. حساب عضو المكتبة (Member)
+*   **اسم المستخدم:** `member`
+*   **كلمة المرور:** `member123`
+*   **الدور:** MEMBER
 
-You said:
-ملف ريدمي موقعه اين
+---
+
+## 📄 رخصة المشروع
+هذا المشروع متاح تحت رخصة **MIT**. لمزيد من التفاصيل يرجى مراجعة ملف الرخصة.

@@ -1,20 +1,24 @@
-// MemberService.java
 package com.baha.oop.service;
 
+import com.baha.oop.exception.BusinessRuleException;
+import com.baha.oop.exception.DuplicateResourceException;
 import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.Member;
+import com.baha.oop.repository.BorrowingRepository;
 import com.baha.oop.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class MemberService {
 
-    @Autowired
-    private MemberRepository memberRepository;
+    private final MemberRepository memberRepository;
+    private final BorrowingRepository borrowingRepository;
 
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
@@ -25,29 +29,33 @@ public class MemberService {
                 .orElseThrow(() -> new ResourceNotFoundException("Member", "id", id));
     }
 
+    @Transactional
     public Member saveMember(Member member) {
-        // التحقق من البريد الإلكتروني إذا كان موجوداً
         if (member.getEmail() != null && !member.getEmail().isEmpty()) {
             Optional<Member> existingMember = memberRepository.findByEmail(member.getEmail());
             if (existingMember.isPresent() && !existingMember.get().getId().equals(member.getId())) {
-                throw new RuntimeException("البريد الإلكتروني يجب أن يكون فريداً");
+                throw new DuplicateResourceException("A member with email " + member.getEmail() + " already exists");
             }
         }
 
-        // التحقق من الهاتف إذا كان موجوداً
         if (member.getPhone() != null && !member.getPhone().isEmpty()) {
             List<Member> existingMembers = memberRepository.findByPhone(member.getPhone());
             if (!existingMembers.isEmpty() && !existingMembers.get(0).getId().equals(member.getId())) {
-                throw new RuntimeException("رقم الهاتف يجب أن يكون فريداً");
+                throw new DuplicateResourceException("A member with phone " + member.getPhone() + " already exists");
             }
         }
 
         return memberRepository.save(member);
     }
 
+    @Transactional
     public void deleteMember(Long id) {
         Member member = memberRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Member", "id", id));
+        Long activeBorrowings = borrowingRepository.countActiveBorrowingsByMember(id);
+        if (activeBorrowings > 0) {
+            throw new BusinessRuleException("Cannot delete a member with " + activeBorrowings + " active borrowing(s)");
+        }
         memberRepository.delete(member);
     }
 

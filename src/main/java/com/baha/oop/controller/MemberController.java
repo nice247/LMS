@@ -1,10 +1,9 @@
-// MemberController.java
 package com.baha.oop.controller;
 
 import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.Member;
 import com.baha.oop.service.MemberService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,10 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/members")
+@RequiredArgsConstructor
 public class MemberController {
 
-    @Autowired
-    private MemberService memberService;
+    private final MemberService memberService;
 
     @GetMapping
     public String listMembers(@RequestParam(required = false) String name, Model model) {

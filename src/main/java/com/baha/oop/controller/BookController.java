@@ -1,10 +1,9 @@
-// BookController.java
 package com.baha.oop.controller;
 
 import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.Book;
 import com.baha.oop.service.BookService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,10 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/books")
+@RequiredArgsConstructor
 public class BookController {
 
-    @Autowired
-    private BookService bookService;
+    private final BookService bookService;
 
     @GetMapping
     public String listBooks(@RequestParam(required = false) String title,

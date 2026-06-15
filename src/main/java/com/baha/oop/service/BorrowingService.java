@@ -1,13 +1,13 @@
-// BorrowingService.java
 package com.baha.oop.service;
 
+import com.baha.oop.exception.BusinessRuleException;
 import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.*;
 import com.baha.oop.repository.BookRepository;
 import com.baha.oop.repository.BorrowingHistoryRepository;
 import com.baha.oop.repository.BorrowingRepository;
 import com.baha.oop.repository.MemberRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,48 +16,48 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BorrowingService {
 
-    @Autowired
-    private BorrowingRepository borrowingRepository;
+    private static final int MAX_ACTIVE_BORROWINGS_PER_MEMBER = 5;
 
-    @Autowired
-    private BorrowingHistoryRepository borrowingHistoryRepository;
-
-    @Autowired
-    private BookRepository bookRepository;
-
-    @Autowired
-    private MemberRepository memberRepository;
+    private final BorrowingRepository borrowingRepository;
+    private final BorrowingHistoryRepository borrowingHistoryRepository;
+    private final BookRepository bookRepository;
+    private final MemberRepository memberRepository;
 
     public List<Borrowing> getAllBorrowings() {
         return borrowingRepository.findAll();
     }
 
     @Transactional
-    public Borrowing borrowBook(Long bookId, Long memberId) {
+    public Borrowing borrowBook(com.baha.oop.dto.BorrowRequest request) {
+        Long bookId = request.getBookId();
+        Long memberId = request.getMemberId();
+
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", "id", bookId));
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member", "id", memberId));
 
-        // التحقق من أن الكتاب متاح
         if (!book.isAvailable()) {
-            throw new RuntimeException("الكتاب غير متاح للاستعارة");
+            throw new BusinessRuleException("Book '" + book.getTitle() + "' is not available for borrowing");
         }
 
-        // التحقق من أن العضو ليس لديه استعارة نشطة لنفس الكتاب
         Optional<Borrowing> existingBorrowing = borrowingRepository.findActiveBorrowing(memberId, bookId);
         if (existingBorrowing.isPresent()) {
-            throw new RuntimeException("العضو لديه استعارة نشطة لهذا الكتاب بالفعل");
+            throw new BusinessRuleException("Member already has an active borrowing for this book");
         }
 
-        // تحديث حالة الكتاب إلى غير متاح
+        Long activeCount = borrowingRepository.countActiveBorrowingsByMember(memberId);
+        if (activeCount >= MAX_ACTIVE_BORROWINGS_PER_MEMBER) {
+            throw new BusinessRuleException("Member has reached the maximum limit of " + MAX_ACTIVE_BORROWINGS_PER_MEMBER + " active borrowings");
+        }
+
         book.setAvailable(false);
         bookRepository.save(book);
 
-        // إنشاء استعارة جديدة
         BorrowingId borrowingId = new BorrowingId(bookId, memberId);
         Borrowing borrowing = new Borrowing();
         borrowing.setId(borrowingId);
@@ -65,6 +65,12 @@ public class BorrowingService {
         borrowing.setMember(member);
         borrowing.setBorrowDate(LocalDate.now());
         borrowing.setReturnDate(null);
+        if (request.isDeliveryRequired()) {
+            borrowing.setDeliveryAddress(request.getDeliveryAddress());
+            borrowing.setDeliveryStatus(DeliveryStatus.PENDING);
+        } else {
+            borrowing.setDeliveryStatus(DeliveryStatus.NONE);
+        }
 
         return borrowingRepository.save(borrowing);
     }
@@ -75,29 +81,25 @@ public class BorrowingService {
         Borrowing borrowing = borrowingRepository.findById(borrowingId)
                 .orElseThrow(() -> new ResourceNotFoundException("Borrowing", "id", borrowingId));
 
-        // نقل سجل الاستعارة إلى الجدول التاريخي
         BorrowingHistory history = BorrowingHistory.builder()
                 .title(borrowing.getBook().getTitle())
                 .member(borrowing.getMember().getName())
                 .borrowDate(borrowing.getBorrowDate())
-                .returnDate(LocalDate.now()) // تاريخ الإرجاع الحالي
+                .returnDate(LocalDate.now())
                 .build();
 
         borrowingHistoryRepository.save(history);
 
-        // تحديث حالة الكتاب إلى متاح
         Book book = borrowing.getBook();
         book.setAvailable(true);
         bookRepository.save(book);
 
-        // حذف سجل الاستعارة من الجدول الرئيسي
         borrowingRepository.delete(borrowing);
     }
 
     public List<BorrowingHistory> getAllBorrowingHistory() {
         return borrowingHistoryRepository.findAll();
     }
-
 
     public List<Borrowing> getActiveBorrowings() {
         return borrowingRepository.findByReturnDateIsNull();
@@ -107,7 +109,7 @@ public class BorrowingService {
         LocalDate fourteenDaysAgo = LocalDate.now().minusDays(14);
         return borrowingRepository.findByReturnDateIsNullAndBorrowDateBefore(fourteenDaysAgo);
     }
-    // إضافة دوال جديدة للتعامل مع السجلات التاريخية
+
     public List<BorrowingHistory> getBorrowingHistoryByMember(String memberName) {
         return borrowingHistoryRepository.findByMemberName(memberName);
     }
@@ -116,9 +118,7 @@ public class BorrowingService {
         return borrowingHistoryRepository.findByBookTitle(bookTitle);
     }
 
-
     public Long countBorrowingHistoryByMember(String memberName) {
         return borrowingHistoryRepository.countByMemberName(memberName);
     }
-
 }

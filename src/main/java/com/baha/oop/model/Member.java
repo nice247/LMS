@@ -6,6 +6,9 @@ import lombok.*;
 import java.util.List;
 
 @Entity
+@Table(name = "member", indexes = {
+        @Index(name = "idx_member_email", columnList = "email")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,7 +17,7 @@ public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "member_seq")
-    @SequenceGenerator(name = "member_seq", sequenceName = "MEMBER_SEQ", allocationSize = 1)
+    @SequenceGenerator(name = "member_seq", sequenceName = "member_seq", allocationSize = 1)
     private Long id;
 
     @Column(nullable = false)
@@ -23,7 +26,9 @@ public class Member {
     private String email;
 
     private String phone;
-    // إضافة هذه الدوال إلى كيان Member
+
+    private String address;
+
     @Transient
     public boolean hasActiveBorrowings(List<Borrowing> borrowings) {
         return borrowings.stream()

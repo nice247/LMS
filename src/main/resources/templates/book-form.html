@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${book.id != null} ? 'تعديل الكتاب' : 'إضافة كتاب'">إضافة كتاب - نظام إدارة المكتبة</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
@@ -53,11 +53,24 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/books}">الكتب</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
                     <a class="nav-link" th:href="@{/members}">الأعضاء</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
                     <a class="nav-link" th:href="@{/borrowings}">الاستعارات</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
+                    <a class="nav-link" th:href="@{/purchases}">طلبات الشراء</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('MEMBER')">
+                    <a class="nav-link" th:href="@{/borrowings/my-history}">سجل استعاراتي</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link btn btn-outline-light btn-sm text-white px-3" th:href="@{/logout}">
+                        <i class="fas fa-sign-out-alt me-1"></i> تسجيل الخروج
+                    </a>
                 </li>
             </ul>
         </div>
@@ -99,9 +112,20 @@
                             <div class="form-text">أدخل الرقم الدولي للكتاب (اختياري)</div>
                         </div>
 
+                        <div class="mb-3">
+                            <label for="price" class="form-label">السعر</label>
+                            <input type="number" step="0.01" class="form-control" id="price" th:field="*{price}">
+                            <div class="form-text">أدخل سعر الكتاب إذا كان للبيع (اختياري)</div>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="forSale" th:field="*{forSale}">
+                            <label class="form-check-label" for="forSale">الكتاب معروض للبيع</label>
+                        </div>
+
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="available" th:field="*{available}">
-                            <label class="form-check-label" for="available">الكتاب متاح للاستعارة</label>
+                            <label class="form-check-label" for="available">الكتاب متاح للاستعارة أو الشراء</label>
                         </div>
 
                         <div class="d-flex justify-content-between">
@@ -123,7 +147,7 @@
 <footer class="py-4 bg-light mt-auto">
     <div class="container-fluid">
         <div class="d-flex align-items-center justify-content-between small">
-            <div class="text-muted">حقوق النشر &copy; نظام إدارة المكتبة 2023</div>
+            <div class="text-muted">حقوق النشر &copy; نظام إدارة المكتبة 2025</div>
         </div>
     </div>
 </footer>

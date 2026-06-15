@@ -1,4 +1,3 @@
-// MemberRepository.java
 package com.baha.oop.repository;
 
 import com.baha.oop.model.Member;

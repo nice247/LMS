@@ -29,14 +29,24 @@
                 <li class="nav-item">
                     <a class="nav-link" th:href="@{/books}">الكتب</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
                     <a class="nav-link" th:href="@{/members}">الأعضاء</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
                     <a class="nav-link" th:href="@{/borrowings}">الاستعارات النشطة</a>
                 </li>
+                <li class="nav-item" sec:authorize="hasRole('MEMBER')">
+                    <a class="nav-link" th:href="@{/borrowings/my-history}">سجل استعاراتي</a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('LIBRARIAN')">
+                    <a class="nav-link" th:href="@{/purchases}">طلبات الشراء</a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link active" href="#">السجل التاريخي</a>
+                    <a class="nav-link btn btn-outline-light btn-sm text-white px-3" th:href="@{/logout}">
+                        <i class="fas fa-sign-out-alt me-1"></i> تسجيل الخروج
+                    </a>
                 </li>
             </ul>
         </div>
@@ -47,9 +57,49 @@
 <div class="container">
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
         <h1 class="h3 mb-0 text-gray-800" th:text="${title != null} ? ${title} : 'السجل التاريخي للاستعارات'"></h1>
-        <a th:href="@{/borrowings}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-1"></i> رجوع إلى الاستعارات النشطة
+        <a th:href="@{/borrowings}" class="btn btn-secondary" sec:authorize="hasRole('LIBRARIAN')">
+            <i class="fas fa-arrow-left me-1"></i> رجوع للاستعارات
         </a>
+        <a th:href="@{/}" class="btn btn-secondary" sec:authorize="hasRole('MEMBER')">
+            <i class="fas fa-home me-1"></i> الرئيسية
+        </a>
+    </div>
+
+    <!-- بطاقة الاستعارات النشطة -->
+    <div class="card mb-4" th:if="${activeBorrowings != null}">
+        <div class="card-header primary py-3">
+            <h6 class="m-0 font-weight-bold">الاستعارات النشطة حالياً</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>الكتاب</th>
+                        <th>تاريخ الاستعارة</th>
+                        <th>حالة التوصيل</th>
+                        <th>العنوان</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="borrowing : ${activeBorrowings}">
+                        <td th:text="${borrowing.book.title}"></td>
+                        <td th:text="${#temporals.format(borrowing.borrowDate, 'yyyy-MM-dd')}"></td>
+                        <td>
+                            <span th:if="${borrowing.deliveryStatus.name() == 'NONE'}" class="badge bg-secondary">استلام من المكتبة</span>
+                            <span th:if="${borrowing.deliveryStatus.name() == 'PENDING'}" class="badge bg-warning text-dark">قيد المعالجة</span>
+                            <span th:if="${borrowing.deliveryStatus.name() == 'IN_TRANSIT'}" class="badge bg-info">في الطريق</span>
+                            <span th:if="${borrowing.deliveryStatus.name() == 'DELIVERED'}" class="badge bg-success">تم التوصيل</span>
+                        </td>
+                        <td th:text="${borrowing.deliveryAddress != null ? borrowing.deliveryAddress : '---'}"></td>
+                    </tr>
+                    <tr th:if="${activeBorrowings.empty}">
+                        <td colspan="4" class="text-center">ليس لديك أي استعارات نشطة حالياً</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- بطاقة السجل التاريخي -->

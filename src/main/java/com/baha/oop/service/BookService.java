@@ -1,20 +1,22 @@
-// BookService.java
 package com.baha.oop.service;
 
+import com.baha.oop.exception.BusinessRuleException;
+import com.baha.oop.exception.DuplicateResourceException;
 import com.baha.oop.exception.ResourceNotFoundException;
 import com.baha.oop.model.Book;
 import com.baha.oop.repository.BookRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class BookService {
 
-    @Autowired
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
 
     public List<Book> getAllBooks() {
         return bookRepository.findAll();
@@ -25,20 +27,24 @@ public class BookService {
                 .orElseThrow(() -> new ResourceNotFoundException("Book", "id", id));
     }
 
+    @Transactional
     public Book saveBook(Book book) {
-        // التحقق من الترقيم الدولي إذا كان موجوداً
         if (book.getIsbn() != null && !book.getIsbn().isEmpty()) {
             Optional<Book> existingBook = bookRepository.findByIsbn(book.getIsbn());
             if (existingBook.isPresent() && !existingBook.get().getId().equals(book.getId())) {
-                throw new RuntimeException("رقم ISBN يجب أن يكون فريداً");
+                throw new DuplicateResourceException("A book with ISBN " + book.getIsbn() + " already exists");
             }
         }
         return bookRepository.save(book);
     }
 
+    @Transactional
     public void deleteBook(Long id) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Book", "id", id));
+        if (!book.isAvailable()) {
+            throw new BusinessRuleException("Cannot delete a book that is currently borrowed");
+        }
         bookRepository.delete(book);
     }
 
@@ -54,6 +60,7 @@ public class BookService {
         return bookRepository.findByAuthorContainingIgnoreCase(author);
     }
 
+    @Transactional
     public Book updateBookAvailability(Long id, boolean available) {
         Book book = getBookById(id);
         book.setAvailable(available);
