@@ -118,7 +118,7 @@
                     <div th:each="borrowing : ${activeBorrowings}"
                          class="card borrowing-card mb-3"
                          th:classappend="${borrowing.isOverdue(T(java.time.LocalDate).now())} ? 'overdue-card' : ''"
-                         th:onclick="'selectBorrowing(' + ${borrowing.book.id} + ', ' + ${borrowing.member.id} + ')'">
+                         th:onclick="'selectBorrowing(this, ' + ${borrowing.book.id} + ', ' + ${borrowing.member.id} + ', \'' + ${borrowing.book.title} + '\', \'' + ${borrowing.member.name} + '\', \'' + ${#temporals.format(borrowing.borrowDate, 'yyyy-MM-dd')} + '\', ' + ${borrowing.isOverdue(T(java.time.LocalDate).now())} + ')'">
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-8">
@@ -212,24 +212,29 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    function selectBorrowing(bookId, memberId) {
+    function selectBorrowing(element, bookId, memberId, bookTitle, memberName, borrowDate, isOverdue) {
         // إخفاء جميع البطاقات المحددة مسبقاً
         document.querySelectorAll('.borrowing-card').forEach(card => {
             card.classList.remove('bg-light');
         });
 
         // تمييز البطاقة المحددة
-        event.currentTarget.classList.add('bg-light');
+        element.classList.add('bg-light');
 
         // تعبئة النموذج
         document.getElementById('bookId').value = bookId;
         document.getElementById('memberId').value = memberId;
 
-        // عرض تفاصيل البطاقة المحددة (هنا يمكنك إضافة جلب البيانات الحقيقية)
-        document.getElementById('selectedBook').textContent = 'كتاب رقم: ' + bookId;
-        document.getElementById('selectedMember').textContent = 'عضو رقم: ' + memberId;
-        document.getElementById('borrowDate').textContent = new Date().toLocaleDateString();
-        document.getElementById('borrowingStatus').innerHTML = '<span class="badge bg-warning">نشطة</span>';
+        // عرض تفاصيل البطاقة المحددة
+        document.getElementById('selectedBook').textContent = bookTitle;
+        document.getElementById('selectedMember').textContent = memberName;
+        document.getElementById('borrowDate').textContent = borrowDate;
+        
+        if (isOverdue) {
+            document.getElementById('borrowingStatus').innerHTML = '<span class="badge bg-danger">متأخرة</span>';
+        } else {
+            document.getElementById('borrowingStatus').innerHTML = '<span class="badge bg-warning">نشطة</span>';
+        }
 
         // إظهار تفاصيل الإرجاع
         document.getElementById('noSelection').style.display = 'none';
